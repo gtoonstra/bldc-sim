@@ -1,4 +1,5 @@
 # bldc-sim
+
 A simulator written in python with some basic diagramming functions, intended
 to be used for BLDC motor control analysis, using a PWM signal to control either
 torque or speed (your controller decides that). 
@@ -23,7 +24,6 @@ There are four diagrams that provide feedback on what the motor is actually doin
 - Omega (electrical rpm) in rad/s
 - Angle (the actual motor position converted to degrees)
 - Current (at the bus, so from/to the battery)
-- 
 
 ## Parts of a controller implementation
 
