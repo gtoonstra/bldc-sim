@@ -34,10 +34,10 @@ class Graph(Gtk.DrawingArea):
 
     def draw_tuple( self, ctx, data ):
         ctx.set_source_rgb(0, 0, 0)
-        self.draw_line( ctx, self.data, 0 )
+        self.draw_line( ctx, data, 0 )
         ctx.stroke()
         ctx.set_source_rgb(0, 0, 1)
-        self.draw_line( ctx, self.data, 1 )
+        self.draw_line( ctx, data, 1 )
         ctx.stroke()
 
     def draw_data(self,ctx ):

@@ -4,13 +4,25 @@ Based on cairo-demo/X11/cairo-demo.c
 """
 from gi.repository import Gdk, Gtk, GObject
 from graph import Graph
+import simconstants
+from simulator import Simulator
+import sys
+import argparse
 
 class SimulatorWindow(Gtk.Window):
-    def __init__(self):
+    def __init__(self, controller):
         super( SimulatorWindow, self ).__init__()
-        self.t = 0.0
-        self.n = 0
-    
+        self.controller = controller
+        self.elapsed = 0.0
+        self.epoch = 0
+        self.throttleval = 0.0
+        self.loadval = 0.0
+        self.committedThrottleVal = 0.0
+        self.dt = 1.0 / simconstants.SIMFREQ
+        self.va = 0.0
+        self.vb = 0.0
+        self.vc = 0.0
+
         self.connect('destroy', lambda w: Gtk.main_quit())
         self.set_default_size(800, 650)
 
@@ -21,16 +33,26 @@ class SimulatorWindow(Gtk.Window):
         vbox.pack_start(self.graph, True, True, 0)
 
         hbox = Gtk.HBox()
-        plusbtn = Gtk.Button( "+" )
-        plusbtn.connect( "clicked" , self.addpwm )
-        hbox.pack_start( plusbtn, True, True, 0 )
-        minbtn = Gtk.Button( "-" )
-        minbtn.connect( "clicked" , self.subtractpwm )
-        hbox.pack_start( minbtn, True, True, 0 )
-        self.pwm = self.add_label( "pwm: ", hbox )
+        self.pwm = self.add_label( "throttle (%): ", hbox )
+        adj1 = Gtk.Adjustment(0.0, 0.0, 101.0, 0.1, 1.0, 1.0)
+        self.throttlescale = Gtk.HScale()
+        self.throttlescale.set_adjustment( adj1 )
+        self.throttlescale.set_digits(1)
+        self.throttlescale.set_draw_value(True)
+        hbox.pack_start( self.throttlescale, True, True, 0 )
+        self.throttlescale.connect( "change-value", self.change_throttle )
+
+        self.load = self.add_label( "load (Nm): ", hbox )
+        adj2 = Gtk.Adjustment(0.0, 0.0, 6.0, 0.1, 1.0, 1.0)
+        self.loadscale = Gtk.HScale()
+        self.loadscale.set_adjustment( adj2 )
+        self.loadscale.set_digits(2)
+        self.loadscale.set_draw_value(True)
+        hbox.pack_start( self.loadscale, True, True, 0 )
+        self.loadscale.connect( "change-value", self.change_load )
 
         vbox.pack_start(hbox, False, False, 0)
-        # self.sim = Simulator()
+        self.sim = Simulator()
 
         GObject.timeout_add( 5, self.callback )
 
@@ -46,29 +68,61 @@ class SimulatorWindow(Gtk.Window):
         hbox.pack_start( vlabel, True, True, 0 )
         return vlabel
 
-    def addpwm( self, btn ):
-        sim.movepwm(1)
+    def change_throttle( self, scale, scroll, value ):
+        print value
+        if value > 100.0:
+            value = 100.0
+        if value < 0.0:
+            value = 0.0
+        self.throttleval = value
+        return
 
-    def subtractpwm( self, btn ):
-        sim.movepwm(-1)
+    def change_load( self, scale, scroll, value ):
+        print value
+        if value > 5.0:
+            value = 5.0
+        if value < 0.0:
+            value = 0.0
+        self.loadval = value
+        self.load.set_text( "%3.2f"%( self.loadval )) 
+        return
 
     def callback( self ):
-        t = t + 1.0 / constants.FREQ
-        n = n + 1
+        self.elapsed = self.elapsed + (1.0 / self.dt)
+        self.epoch = self.epoch + 1
 
-        pwm.set_text( "%d"%(sim.getPwm()) )
+        if self.epoch % simconstants.THROTTLE_INTERVAL == 0:
+            self.committedThrottleVal = self.throttleval
+            self.pwm.set_text( "%3.2f"%( self.committedThrottleVal )) 
+
+        observables = self.sim.get_observables()
+        nonobservables = self.sim.get_nonobservables()
+
+        if self.epoch % simconstants.CONTROLLER_INTERVAL == 0:
+            self.va, self.vb, self.vc = self.controller.step_sim( self.dt, self.elapsed, self.epoch, observables, nonobservables )
 
         # t = t in s after last step
-        a,b,c,d,e,f,g,h = sim.step_sim( t, n )
+        a,b,c,d,e,f,g,h = self.sim.step_sim( self.dt, self.elapsed, self.epoch, self.loadval, self.va, self.vb, self.vc )
         self.graph.update_lists( a,b,c,d,e,f,g,h )
         self.graph.queue_draw()
 
         return True
 
 def main():
-    win = SimulatorWindow()
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("controller", help="Specify name of controller module (.py file minus directory)")
+    args = parser.parse_args()
+
+    controller = get_module( args.controller )
+
+    win = SimulatorWindow( controller )
     win.run()
 
+def get_module(name):
+    name = "controllers." + name
+    mod = __import__(name, fromlist=[''])
+    return mod
 
 if __name__ == '__main__':
     main()
