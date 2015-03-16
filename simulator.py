@@ -87,6 +87,7 @@ class Simulator(object):
         # Calculate change in mechanical rpm
         torque = ( self.Te - self.Tl - self.Tf )
 
+        # J is the moment of inertia
         dOmega = (1.0 / simconstants.J) * torque * dt
         self.omega = self.omega + dOmega
 

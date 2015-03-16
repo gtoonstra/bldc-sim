@@ -54,7 +54,7 @@ class SimulatorWindow(Gtk.Window):
         vbox.pack_start(hbox, False, False, 0)
         self.sim = Simulator()
 
-        GObject.timeout_add( 5, self.callback )
+        GObject.timeout_add( 1, self.callback )
 
         self.show_all()
 

@@ -13,16 +13,16 @@ DEG_240_RAD = 4.0 * math.pi / 3
 
 # Motor specifics
 # L here is L subtracted by mutual inductance M.
-La = 0.0036
-Lb = 0.0036
-Lc = 0.0036
+La = 0.00036
+Lb = 0.00036
+Lc = 0.00036
 
 Ra = 1.05
 Rb = 1.05
 Rc = 1.05
 
 Bfriction = 0.001
-J = 0.00002
+J = 0.0001
 
 STATIC_FRICTION = 0.1
 FRICTION_S=0.1
