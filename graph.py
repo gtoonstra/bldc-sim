@@ -17,10 +17,10 @@ class Graph(Gtk.DrawingArea):
 
     # Add new values to graphs
     def update_lists( self, a,b,c,d,e,f,g,h ):
-        self.data1.append( (a,b) )
-        self.data2.append( (c,d) )
-        self.data3.append( (e,f) )
-        self.data4.append( (g,h) )
+        self.data1.append( (a,e) )
+        self.data2.append( (b,f) )
+        self.data3.append( (c,g) )
+        self.data4.append( (d,h) )
 
         if ( len(self.data1) > 780 ):
             del self.data1[0]
@@ -45,13 +45,13 @@ class Graph(Gtk.DrawingArea):
         self.draw_tuple( ctx, self.data1 )
 
         ctx.translate( 0, 150 )
-        self.draw_tuple( ctx, self.data1 )
+        self.draw_tuple( ctx, self.data2 )
 
         ctx.translate( 0, 150 )
-        self.draw_tuple( ctx, self.data1 )
+        self.draw_tuple( ctx, self.data3 )
 
         ctx.translate( 0, 150 )
-        self.draw_tuple( ctx, self.data1 )
+        self.draw_tuple( ctx, self.data4 )
 
     def draw(self, da, ctx):
         ctx.scale( 1.0, 1.0 )

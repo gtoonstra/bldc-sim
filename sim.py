@@ -43,7 +43,7 @@ class SimulatorWindow(Gtk.Window):
         self.throttlescale.connect( "change-value", self.change_throttle )
 
         self.load = self.add_label( "load (Nm): ", hbox )
-        adj2 = Gtk.Adjustment(0.0, 0.0, 6.0, 0.1, 1.0, 1.0)
+        adj2 = Gtk.Adjustment(0.0, 0.0, 5.0, 0.01, 1.0, 1.0)
         self.loadscale = Gtk.HScale()
         self.loadscale.set_adjustment( adj2 )
         self.loadscale.set_digits(2)
@@ -69,7 +69,6 @@ class SimulatorWindow(Gtk.Window):
         return vlabel
 
     def change_throttle( self, scale, scroll, value ):
-        print value
         if value > 100.0:
             value = 100.0
         if value < 0.0:
@@ -78,7 +77,6 @@ class SimulatorWindow(Gtk.Window):
         return
 
     def change_load( self, scale, scroll, value ):
-        print value
         if value > 5.0:
             value = 5.0
         if value < 0.0:
@@ -95,14 +93,15 @@ class SimulatorWindow(Gtk.Window):
             self.committedThrottleVal = self.throttleval
             self.pwm.set_text( "%3.2f"%( self.committedThrottleVal )) 
 
-        observables = self.sim.get_observables()
-        nonobservables = self.sim.get_nonobservables()
+        process_variables = self.sim.get_variables()
 
         if self.epoch % simconstants.CONTROLLER_INTERVAL == 0:
-            self.va, self.vb, self.vc = self.controller.step_sim( self.dt, self.elapsed, self.epoch, observables, nonobservables )
+            self.va, self.vb, self.vc = self.controller.step_sim( self.dt, self.elapsed, self.epoch, self.committedThrottleVal, process_variables )
 
         # t = t in s after last step
-        a,b,c,d,e,f,g,h = self.sim.step_sim( self.dt, self.elapsed, self.epoch, self.loadval, self.va, self.vb, self.vc )
+        a,b,c,d = self.sim.step_sim( self.dt, self.elapsed, self.epoch, self.loadval, self.va, self.vb, self.vc )
+        e,f,g,h = self.controller.get_variables()
+
         self.graph.update_lists( a,b,c,d,e,f,g,h )
         self.graph.queue_draw()
 
@@ -114,7 +113,8 @@ def main():
     parser.add_argument("controller", help="Specify name of controller module (.py file minus directory)")
     args = parser.parse_args()
 
-    controller = get_module( args.controller )
+    mod = get_module( args.controller )
+    controller = mod.make_controller()
 
     win = SimulatorWindow( controller )
     win.run()

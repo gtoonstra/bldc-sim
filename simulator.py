@@ -19,6 +19,7 @@ class Simulator(object):
         self.ia = 0.0
         self.ib = 0.0
         self.ic = 0.0
+        self.I = 0.0
         self.didta = 0.0
         self.didtb = 0.0
         self.didtc = 0.0
@@ -39,20 +40,20 @@ class Simulator(object):
     # The simulator 
     def step_sim( self, dt, elapsed, epoch, load, va, vb, vc ):
         # Set the load
-        self.Tl = load
+        self.Tl = math.copysign( 1, self.omega ) * load
         self.va = va
         self.vb = vb
         self.vc = vc
 
-        # Calculate bemf
+        # Calculate bemf 
         self.bemfa = simconstants.BEMF_CONSTANT * self.omega * math.sin( self.theta )
         self.bemfb = simconstants.BEMF_CONSTANT * self.omega * math.sin( self.theta - simconstants.DEG_120_RAD )
         self.bemfc = simconstants.BEMF_CONSTANT * self.omega * math.sin( self.theta - simconstants.DEG_240_RAD )
 
         # Calculate change in current per di/dt
-        self.didta = (1.0 / simconstants.La) * ( self.va - (simconstants.Ra * self.ia) - self.bemfa )
-        self.didtb = (1.0 / simconstants.Lb) * ( self.vb - (simconstants.Rb * self.ib) - self.bemfb )
-        self.didtc = (1.0 / simconstants.Lc) * ( self.vc - (simconstants.Rc * self.ic) - self.bemfc )
+        self.didta = (1.0 / simconstants.La) * ( self.va - (simconstants.Ra * self.ia) - self.bemfa ) * dt
+        self.didtb = (1.0 / simconstants.Lb) * ( self.vb - (simconstants.Rb * self.ib) - self.bemfb ) * dt
+        self.didtc = (1.0 / simconstants.Lc) * ( self.vc - (simconstants.Rc * self.ic) - self.bemfc ) * dt
 
         # Apply changes to current in phases
         self.ia = self.ia + self.didta
@@ -60,9 +61,9 @@ class Simulator(object):
         self.ic = self.ic + self.didtc
 
         # Torque per phase. Since omega can be null, cannot derive from P/w
-        self.Ta = simconstants.BEMF_CONSTANT * math.sin( self.theta )
-        self.Tb = simconstants.BEMF_CONSTANT * math.sin( self.theta - simconstants.DEG_120_RAD )
-        self.Tc = simconstants.BEMF_CONSTANT * math.sin( self.theta - simconstants.DEG_240_RAD )
+        self.Ta = simconstants.BEMF_CONSTANT * math.sin( self.theta ) * self.ia
+        self.Tb = simconstants.BEMF_CONSTANT * math.sin( self.theta - simconstants.DEG_120_RAD ) * self.ib
+        self.Tc = simconstants.BEMF_CONSTANT * math.sin( self.theta - simconstants.DEG_240_RAD ) * self.ic
 
         # Electrical power
         self.Pelec = self.bemfa * self.ia + self.bemfa * self.ib + self.bemfc * self.ic
@@ -72,34 +73,46 @@ class Simulator(object):
         self.Te = self.Ta + self.Tb + self.Tc
 
         # Friction calculations
-        if self.omega < 0.001:
+        if abs(self.omega) < 1.0:
             # At standstill. We have static friction to conquer.
             # If torque larger than torque required to counter static torque
             if abs(self.Te) > simconstants.STATIC_FRICTION:
-                self.Tf = math.sign( self.Te ) * simconstants.STATIC_FRICTION
+                self.Tf = math.copysign( 1, self.Te ) * simconstants.STATIC_FRICTION
             else:
-                self.Tf = self.Te
+                self.Tf = 0.0
         else:
-           self.Tf = math.sign( self.Te ) * ( simconstants.STATIC_FRICTION * math.exp( -50 * math.abs( self.omega )) + simconstants.FRICTION_S + simconstants.Bfriction * self.omega )
+           # self.Tf = math.copysign( 1, self.Te ) * ( simconstants.STATIC_FRICTION * math.exp( -50 * abs( self.omega )) + simconstants.FRICTION_S + simconstants.Bfriction * self.omega )
+           self.Tf = math.copysign( 1, self.omega ) * ( simconstants.STATIC_FRICTION * math.exp( -50 * abs( self.omega )) + simconstants.FRICTION_S + simconstants.Bfriction * abs(self.omega) )
 
         # Calculate change in mechanical rpm
-        dOmega = (1.0 / simconstants.J) * ( self.Te - self.Tl - self.Tf )
+        torque = ( self.Te - self.Tl - self.Tf )
+
+        dOmega = (1.0 / simconstants.J) * torque * dt
         self.omega = self.omega + dOmega
 
-        return self.ia, self.va, 0,0,0,0,0,0
+        self.I = 0.0
+        if self.ia > 0.0:
+            self.I = self.I + self.ia
+        if self.ib > 0.0:
+            self.I = self.I + self.ib
+        if self.ic > 0.0:
+            self.I = self.I + self.ic
 
-    def get_observables( self ):
+        self.theta += dt * self.omega
+        self.theta = self.theta % ( 2.0 * math.pi )
+
+        return self.omega, self.theta, self.I, self.Te
+
+    def get_variables( self ):
         ret = {}
         ret[ "va" ] = self.va
-        ret[ "vb" ] = self.va
-        ret[ "vc" ] = self.va
+        ret[ "vb" ] = self.vb
+        ret[ "vc" ] = self.vc
         ret[ "ia" ] = self.ia
         ret[ "ib" ] = self.ib
         ret[ "ic" ] = self.ic
-        return ret
-
-    def get_nonobservables( self ):
-        ret = {}
+        ret[ "I" ] = self.I
+        ret[ "V" ] = simconstants.BUSVOLTAGE
         ret[ "omega" ] = self.omega
         ret[ "theta" ] = self.theta
         ret[ "bemfa" ] = self.bemfa
