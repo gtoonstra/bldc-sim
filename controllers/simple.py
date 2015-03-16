@@ -5,7 +5,7 @@ class SimpleController(object):
         self.omega = 0.0
         self.theta = 0.0
         self.I = 0.0
-        self.bemfa = 0.0
+        self.bemf = 0.0
         self.DEG60 = math.pi / 3
         self.DEG120 = 2.0 * self.DEG60
         self.DEG180 = 3.0 * self.DEG60
@@ -58,7 +58,7 @@ class SimpleController(object):
         return va, vb, vc
 
     def get_variables( self ):
-        return self.omega, self.theta, self.I, self.bemfa
+        return self.omega, self.theta, self.I, 0.0, self.bemf, 0.0
         # return 0,0,0,0
 
 def make_controller():

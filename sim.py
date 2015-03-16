@@ -24,7 +24,7 @@ class SimulatorWindow(Gtk.Window):
         self.vc = 0.0
 
         self.connect('destroy', lambda w: Gtk.main_quit())
-        self.set_default_size(800, 650)
+        self.set_default_size(1024, 800)
 
         vbox = Gtk.VBox()
         self.add(vbox)
@@ -99,10 +99,10 @@ class SimulatorWindow(Gtk.Window):
             self.va, self.vb, self.vc = self.controller.step_sim( self.dt, self.elapsed, self.epoch, self.committedThrottleVal, process_variables )
 
         # t = t in s after last step
-        a,b,c,d = self.sim.step_sim( self.dt, self.elapsed, self.epoch, self.loadval, self.va, self.vb, self.vc )
-        e,f,g,h = self.controller.get_variables()
+        a,b,c,d,e,f = self.sim.step_sim( self.dt, self.elapsed, self.epoch, self.loadval, self.va, self.vb, self.vc )
+        g,h,i,j,k,l = self.controller.get_variables()
 
-        self.graph.update_lists( a,b,c,d,e,f,g,h )
+        self.graph.update_lists( a,b,c,d,e,f,g,h,i,j,k,l )
         self.graph.queue_draw()
 
         return True

@@ -102,7 +102,7 @@ class Simulator(object):
         self.theta += dt * self.omega
         self.theta = self.theta % ( 2.0 * math.pi )
 
-        return self.omega, self.theta, self.I, self.Te
+        return self.omega, self.theta, self.I, self.ia, self.bemfa, self.Te
 
     def get_variables( self ):
         ret = {}
