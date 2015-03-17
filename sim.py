@@ -120,7 +120,12 @@ def main():
     win.run()
 
 def get_module(name):
-    name = "controllers." + name
+    try:
+        mod = __import__("controllers.%s"%( name ), fromlist=[''])
+        return mod
+    except ImportError as e:
+        pass
+
     mod = __import__(name, fromlist=[''])
     return mod
 
