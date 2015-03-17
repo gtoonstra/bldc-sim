@@ -40,7 +40,8 @@ class Simulator(object):
     # The simulator 
     def step_sim( self, dt, elapsed, epoch, load, va, vb, vc ):
         # Set the load
-        self.Tl = math.copysign( 1, self.omega ) * load
+        sign = math.copysign( 1, self.omega )
+        self.Tl = sign * load
         self.va = va
         self.vb = vb
         self.vc = vc
@@ -51,14 +52,14 @@ class Simulator(object):
         self.bemfc = simconstants.BEMF_CONSTANT * self.omega * math.sin( self.theta - simconstants.DEG_240_RAD )
 
         # Calculate change in current per di/dt
-        self.didta = (1.0 / simconstants.La) * ( self.va - (simconstants.Ra * self.ia) - self.bemfa ) * dt
-        self.didtb = (1.0 / simconstants.Lb) * ( self.vb - (simconstants.Rb * self.ib) - self.bemfb ) * dt
-        self.didtc = (1.0 / simconstants.Lc) * ( self.vc - (simconstants.Rc * self.ic) - self.bemfc ) * dt
+        self.dot_ia = (1.0 / simconstants.La) * ( self.va - (simconstants.Ra * self.ia) - self.bemfa )
+        self.dot_ib = (1.0 / simconstants.Lb) * ( self.vb - (simconstants.Rb * self.ib) - self.bemfb )
+        self.dot_ic = (1.0 / simconstants.Lc) * ( self.vc - (simconstants.Rc * self.ic) - self.bemfc )
 
         # Apply changes to current in phases
-        self.ia = self.ia + self.didta
-        self.ib = self.ib + self.didtb
-        self.ic = self.ic + self.didtc
+        self.ia = self.ia + self.dot_ia * dt
+        self.ib = self.ib + self.dot_ib * dt
+        self.ic = self.ic + self.dot_ic * dt
 
         # Torque per phase. Since omega can be null, cannot derive from P/w
         self.Ta = simconstants.BEMF_CONSTANT * math.sin( self.theta ) * self.ia
@@ -72,24 +73,22 @@ class Simulator(object):
         # Add torque of all phases
         self.Te = self.Ta + self.Tb + self.Tc
 
+        # Mechanical torque.
+        # mtorque = ((etorque * (p->m->NbPoles / 2)) - (p->m->damping * sv->omega) - p->pv->torque);
+        self.Tm = ((self.Te * (simconstants.NUM_POLES / 2)) - (sign * simconstants.Bdamping * abs(self.omega)) - sign * self.Tl)
+
         # Friction calculations
         if abs(self.omega) < 1.0:
-            # At standstill. We have static friction to conquer.
-            # If torque larger than torque required to counter static torque
-            if abs(self.Te) > simconstants.STATIC_FRICTION:
-                self.Tf = math.copysign( 1, self.Te ) * simconstants.STATIC_FRICTION
+            if abs(self.Te) < simconstants.STATIC_FRICTION:
+                self.Tm = 0.0
             else:
-                self.Tf = 0.0
+                self.Tm = self.Tm - simconstants.STATIC_FRICTION
         else:
-           # self.Tf = math.copysign( 1, self.Te ) * ( simconstants.STATIC_FRICTION * math.exp( -50 * abs( self.omega )) + simconstants.FRICTION_S + simconstants.Bfriction * self.omega )
-           self.Tf = math.copysign( 1, self.omega ) * ( simconstants.STATIC_FRICTION * math.exp( -50 * abs( self.omega )) + simconstants.FRICTION_S + simconstants.Bfriction * abs(self.omega) )
-
-        # Calculate change in mechanical rpm
-        torque = ( self.Te - self.Tl - self.Tf )
+           self.Tm = self.Tm - sign * ( simconstants.STATIC_FRICTION * math.exp( -5 * abs( self.omega )) + simconstants.FRICTION_S )
 
         # J is the moment of inertia
-        dOmega = (1.0 / simconstants.J) * torque * dt
-        self.omega = self.omega + dOmega
+        dotOmega = (self.Tm / simconstants.J)
+        self.omega = self.omega + dotOmega * dt
 
         self.I = 0.0
         if self.ia > 0.0:
@@ -99,7 +98,7 @@ class Simulator(object):
         if self.ic > 0.0:
             self.I = self.I + self.ic
 
-        self.theta += dt * self.omega
+        self.theta += self.omega * dt
         self.theta = self.theta % ( 2.0 * math.pi )
 
         return self.omega, self.theta, self.I, self.ia, self.bemfa, self.Te
