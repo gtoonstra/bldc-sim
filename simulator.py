@@ -74,7 +74,7 @@ class Simulator(object):
 
         # Mechanical torque.
         # mtorque = ((etorque * (p->m->NbPoles / 2)) - (p->m->damping * sv->omega) - p->pv->torque);
-        self.Tm = ((self.Te * (simconstants.NUM_POLES / 2)) - (sign * simconstants.Bdamping * abs(self.omega)) - sign * self.Tl)
+        self.Tm = ((self.Te * (simconstants.NUM_POLES / 2)) - (sign * simconstants.Bdamping * abs(self.omega)) - self.Tl)
 
         # Friction calculations
         if abs(self.omega) < 1.0:
