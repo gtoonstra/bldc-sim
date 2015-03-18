@@ -32,12 +32,12 @@ class SimulatorWindow(Gtk.Window):
         self.table = GraphTable()
         vbox.pack_start( self.table, True, True, 0 )
 
-        self.table.add_row( "omega", 0.25 )
-        self.table.add_row( "theta", 0.25 )
-        self.table.add_row( "I", 0.25 )
-        self.table.add_row( "ia", 0.25 )
-        self.table.add_row( "bemf", 0.25 )
-        self.table.add_row( "torque", 0.25 )
+        self.table.add_row( "omega", 0.2 )
+        self.table.add_row( "theta", 5 )
+        self.table.add_row( "I", 3 )
+        self.table.add_row( "ia", 3 )
+        self.table.add_row( "bemf", 4 )
+        self.table.add_row( "torque", 50 )
 
         hbox = Gtk.HBox()
         self.pwm = self.add_label( "throttle (%): ", hbox )
