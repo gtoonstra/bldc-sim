@@ -31,7 +31,6 @@ class Simulator(object):
         self.Pelec = 0.0
         self.Te = 0.0
         self.Tl = 0.0
-        self.Tf = 0.0
 
         self.Ta = 0.0
         self.Tb = 0.0
@@ -101,7 +100,7 @@ class Simulator(object):
         self.theta += self.omega * dt
         self.theta = self.theta % ( 2.0 * math.pi )
 
-        return [self.omega, self.theta, self.I, self.ia, self.bemfa, self.Te]
+        return [self.omega, self.theta, self.va, self.ia, self.bemfa, self.Te]
 
     def get_variables( self ):
         ret = {}
@@ -120,6 +119,5 @@ class Simulator(object):
         ret[ "bemfc" ] = self.bemfc
         ret[ "torque" ] = self.Te
         ret[ "loadtorque" ] = self.Tl
-        ret[ "frictiontorque" ] = self.Tf
         return ret
 

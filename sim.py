@@ -34,10 +34,11 @@ class SimulatorWindow(Gtk.Window):
 
         self.table.add_row( "omega", 0.2 )
         self.table.add_row( "theta", 5 )
-        self.table.add_row( "I", 3 )
+        self.table.add_row( "va", 3 )
         self.table.add_row( "ia", 3 )
         self.table.add_row( "bemf", 4 )
         self.table.add_row( "torque", 50 )
+        self.table.add_row( "errors", 5 )
 
         hbox = Gtk.HBox()
         self.pwm = self.add_label( "throttle (%): ", hbox )
@@ -108,6 +109,10 @@ class SimulatorWindow(Gtk.Window):
         # t = t in s after last step
         s = self.sim.step_sim( self.dt, self.elapsed, self.epoch, self.loadval, self.va, self.vb, self.vc )
         c = self.controller.get_variables()
+        e = self.controller.get_errors()
+
+        s.append( e[0] )
+        c.append( e[1] )
 
         self.table.update_data( s,c )
 
