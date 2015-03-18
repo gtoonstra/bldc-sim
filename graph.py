@@ -5,34 +5,22 @@ SIZE = 30
 
 class Graph(Gtk.DrawingArea):
 
-    def __init__ (self):
+    def __init__ (self, scale):
         Gtk.DrawingArea.__init__(self)
         self.connect('draw', self.draw)
 
+        self.scale = scale
         # Data elements are 2-tuples of desired and actual
-        self.data1 = []
-        self.data2 = []
-        self.data3 = []
-        self.data4 = []
-        self.data5 = []
-        self.data6 = []
+
+        self.data = []
 
     # Add new values to graphs
-    def update_lists( self, a,b,c,d,e,f,g,h,i,j,k,l ):
-        self.data1.append( (a,g) )
-        self.data2.append( (b,h) )
-        self.data3.append( (c,i) )
-        self.data4.append( (d,j) )
-        self.data5.append( (e,k) )
-        self.data6.append( (f,l) )
+    def update_graph( self, a,b ):
+        self.data.append( (-a,-b) )
 
-        if ( len(self.data1) > 780 ):
-            del self.data1[0]
-            del self.data2[0]
-            del self.data3[0]
-            del self.data4[0]
-            del self.data5[0]
-            del self.data6[0]
+        if ( len(self.data) > 780 ):
+            del self.data[0]
+        self.queue_draw()
 
     def draw_line( self, ctx, data, idx, factor ):
         for i in xrange(len( data )):
@@ -53,28 +41,12 @@ class Graph(Gtk.DrawingArea):
         ctx.line_to( 780, 0 )
         ctx.stroke()
 
-    def draw_data(self,ctx ):
+    def draw_data(self,ctx, scale ):
         ctx.translate( 10, 50 )
-        self.draw_tuple( ctx, self.data1, 0.25 )
-
-        ctx.translate( 0, 120 )
-        self.draw_tuple( ctx, self.data2, 50.0/6.28 )
-
-        ctx.translate( 0, 120 )
-        self.draw_tuple( ctx, self.data3, 1.0 )
-
-        ctx.translate( 0, 120 )
-        self.draw_tuple( ctx, self.data4, 2.0 )
-
-        ctx.translate( 0, 120 )
-        self.draw_tuple( ctx, self.data5, 4.0 )
-
-        ctx.translate( 0, 120 )
-        self.draw_tuple( ctx, self.data6, 50.0 )
+        self.draw_tuple( ctx, self.data, scale )
 
     def draw(self, da, ctx):
         ctx.scale( 1.0, 1.0 )
         ctx.set_line_width(1)
-        self.draw_data( ctx )
-
+        self.draw_data( ctx, self.scale )
 

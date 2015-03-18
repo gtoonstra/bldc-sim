@@ -3,7 +3,7 @@
 Based on cairo-demo/X11/cairo-demo.c
 """
 from gi.repository import Gdk, Gtk, GObject
-from graph import Graph
+from graphline import GraphTable
 import simconstants
 from simulator import Simulator
 import sys
@@ -29,8 +29,15 @@ class SimulatorWindow(Gtk.Window):
         vbox = Gtk.VBox()
         self.add(vbox)
 
-        self.graph = Graph()
-        vbox.pack_start(self.graph, True, True, 0)
+        self.table = GraphTable()
+        vbox.pack_start( self.table, True, True, 0 )
+
+        self.table.add_row( "omega", 0.25 )
+        self.table.add_row( "theta", 0.25 )
+        self.table.add_row( "I", 0.25 )
+        self.table.add_row( "ia", 0.25 )
+        self.table.add_row( "bemf", 0.25 )
+        self.table.add_row( "torque", 0.25 )
 
         hbox = Gtk.HBox()
         self.pwm = self.add_label( "throttle (%): ", hbox )
@@ -99,11 +106,10 @@ class SimulatorWindow(Gtk.Window):
             self.va, self.vb, self.vc = self.controller.step_sim( self.dt, self.elapsed, self.epoch, self.committedThrottleVal, process_variables )
 
         # t = t in s after last step
-        a,b,c,d,e,f = self.sim.step_sim( self.dt, self.elapsed, self.epoch, self.loadval, self.va, self.vb, self.vc )
-        g,h,i,j,k,l = self.controller.get_variables()
+        s = self.sim.step_sim( self.dt, self.elapsed, self.epoch, self.loadval, self.va, self.vb, self.vc )
+        c = self.controller.get_variables()
 
-        self.graph.update_lists( a,b,c,d,e,f,g,h,i,j,k,l )
-        self.graph.queue_draw()
+        self.table.update_data( s,c )
 
         return True
 
