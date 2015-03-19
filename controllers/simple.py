@@ -58,8 +58,11 @@ class SimpleController(object):
         return va, vb, vc
 
     def get_variables( self ):
-        return self.omega, self.theta, self.I, 0.0, self.bemf, 0.0
+        return [ self.omega, self.theta, self.I, 0.0, self.bemf, 0.0 ]
         # return 0,0,0,0
+
+    def get_errors( self ):
+        return [ self.omega - self.omega, ( self.theta - self.theta ) * 180.0 / math.pi ]
 
 def make_controller():
     return SimpleController()
