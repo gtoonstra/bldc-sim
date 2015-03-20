@@ -32,7 +32,7 @@ class SimulatorWindow(Gtk.Window):
         self.table = GraphTable()
         vbox.pack_start( self.table, True, True, 0 )
 
-        self.table.add_row( "omega", 0.2 )
+        self.table.add_row( "omega", 0.05 )
         self.table.add_row( "theta", 5 )
         self.table.add_row( "va", 3 )
         self.table.add_row( "ia", 3 )

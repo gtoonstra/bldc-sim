@@ -10,27 +10,27 @@ CONTROLLER_INTERVAL = 4
 # slow loop interval for PID updates, 64kHz / 64 = 1kHz
 SLOW_INTERVAL = 64
 
-BEMF_CONSTANT = 0.0537
+BEMF_CONSTANT = 0.0137
 DEG_120_RAD = 2.0 * math.pi / 3
 DEG_240_RAD = 4.0 * math.pi / 3
 
 # Motor specifics
 # L here is L subtracted by mutual inductance M.
-La = 0.0036
-Lb = 0.0036
-Lc = 0.0036
+La = 0.000036
+Lb = 0.000036
+Lc = 0.000036
 
-Ra = 1.05
-Rb = 1.05
-Rc = 1.05
+Ra = 0.52
+Rb = 0.52
+Rc = 0.52
 
-Bdamping = 0.001
-J = 0.0001
+Bdamping = 0.00001
+J = 0.000012
 
-STATIC_FRICTION = 0.1
-FRICTION_S = 0.1
-RPM_MAX = 150.0
-RPM_MIN = 10.0
+STATIC_FRICTION = 0.01
+FRICTION_S = 0.01
+RPM_MAX = 250.0
+RPM_MIN = 0.0
 
 BUSVOLTAGE = 15.0
 NUM_POLES = 2

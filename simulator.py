@@ -20,9 +20,6 @@ class Simulator(object):
         self.ib = 0.0
         self.ic = 0.0
         self.I = 0.0
-        self.didta = 0.0
-        self.didtb = 0.0
-        self.didtc = 0.0
 
         self.va = 0.0
         self.vb = 0.0
@@ -51,14 +48,14 @@ class Simulator(object):
         self.bemfc = simconstants.BEMF_CONSTANT * self.omega * math.sin( self.theta - simconstants.DEG_240_RAD )
 
         # Calculate change in current per di/dt
-        self.dot_ia = (1.0 / simconstants.La) * ( self.va - (simconstants.Ra * self.ia) - self.bemfa )
-        self.dot_ib = (1.0 / simconstants.Lb) * ( self.vb - (simconstants.Rb * self.ib) - self.bemfb )
-        self.dot_ic = (1.0 / simconstants.Lc) * ( self.vc - (simconstants.Rc * self.ic) - self.bemfc )
+        dot_ia = (1.0 / simconstants.La) * ( self.va - (simconstants.Ra * self.ia) - self.bemfa )
+        dot_ib = (1.0 / simconstants.Lb) * ( self.vb - (simconstants.Rb * self.ib) - self.bemfb )
+        dot_ic = (1.0 / simconstants.Lc) * ( self.vc - (simconstants.Rc * self.ic) - self.bemfc )
 
         # Apply changes to current in phases
-        self.ia = self.ia + self.dot_ia * dt
-        self.ib = self.ib + self.dot_ib * dt
-        self.ic = self.ic + self.dot_ic * dt
+        self.ia = self.ia + dot_ia * dt
+        self.ib = self.ib + dot_ib * dt
+        self.ic = self.ic + dot_ic * dt
 
         # Torque per phase. Since omega can be null, cannot derive from P/w
         self.Ta = simconstants.BEMF_CONSTANT * math.sin( self.theta ) * self.ia
